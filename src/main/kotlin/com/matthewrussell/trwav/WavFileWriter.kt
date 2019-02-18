@@ -78,12 +78,12 @@ class WavFileWriter(
         }
         return buffer.array()
     }
-    private fun makeHeader(size: Int): ByteArray {
+    private fun makeHeader(audioSize: Int, metadataSize: Int): ByteArray {
         return ByteBuffer
             .allocate(44)
             .order(ByteOrder.LITTLE_ENDIAN)
             .put("RIFF".toByteArray(US_ASCII()))
-            .putInt(size)
+            .putInt(audioSize + WAV_HEADER_LENGTH - 8 + metadataSize)
             .put("WAVEfmt ".toByteArray(US_ASCII()))
             .putInt(16)
             .putShort(1)
@@ -95,15 +95,18 @@ class WavFileWriter(
             .put(BITS_PER_SAMPLE.toByte())
             .put(0)
             .put("data".toByteArray(US_ASCII()))
-            .putInt(size)
+            .putInt(audioSize)
             .array()
     }
     fun write(data: WavFile, dest: File) {
         val metadataChunk = makeMetadataChunk(data.metadata)
         val labelChunk = makeLabelChunk(data.metadata.markers)
         val cueChunk = makeCueChunk(data.metadata.markers)
-        val header = makeHeader(data.audio.size)
+        val metadataSize = metadataChunk.size + labelChunk.size + cueChunk.size
+        val header = makeHeader(data.audio.size, metadataSize)
+
         if (!dest.exists()) dest.createNewFile()
+
         dest.outputStream().use {
             it.write(header)
             it.write(data.audio)
