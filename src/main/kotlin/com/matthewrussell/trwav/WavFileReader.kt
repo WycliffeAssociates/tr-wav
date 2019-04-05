@@ -147,9 +147,8 @@ class WavFileReader(
         }
         // Create absent metadata markers from cue points
         cues.values.forEach { cue ->
-            val matchedCues = metadata.markers.filter { it.label == cue.label }
-            if(matchedCues.isEmpty()) {
-                metadata.markers.add(CuePoint(cue.position, cue.label))
+            if(metadata.markers.contains(cue).not()) {
+                metadata.markers.add(CuePoint(cue.position, cue.label, cue.label.toInt()))
             }
         }
     }
