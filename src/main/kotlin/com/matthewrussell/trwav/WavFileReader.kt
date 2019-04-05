@@ -145,6 +145,12 @@ class WavFileReader(
                 cue.id = (cues.keys.max() ?: 0) + 1
             }
         }
+        // Create absent metadata markers from cue points
+        cues.values.forEach { cue ->
+            if(metadata.markers.contains(cue).not()) {
+                metadata.markers.add(CuePoint(cue.position, cue.label, cue.label.toInt()))
+            }
+        }
     }
 
     fun read(wav: File): WavFile {
