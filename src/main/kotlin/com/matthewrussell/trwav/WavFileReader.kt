@@ -137,7 +137,17 @@ class WavFileReader(
         // Match labels and cue point ids,
         // and also match metadata point positions with cue point positions
         metadata.markers.forEach { cue ->
-            val matchedCues = cues.filter { it.value.label == cue.label }
+            val matchedCues = cues.map {
+                // Fix cue ids if they do not fit metadata verse markers labels
+                val labelInt = it.value.label.toInt()
+                if(labelInt != it.value.id && labelInt > 0) {
+                    it.value.id = labelInt
+                }
+                it.key to it.value
+            }.toMap().filter {
+                it.value.label == cue.label
+            }
+
             if (matchedCues.isNotEmpty()) {
                 cue.id = matchedCues.values.first().id
                 cue.position = matchedCues.values.first().position
