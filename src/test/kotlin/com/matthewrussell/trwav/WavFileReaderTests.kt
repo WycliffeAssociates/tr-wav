@@ -12,7 +12,7 @@ class WavFileReaderTests {
 
     @Test
     fun shouldGetFileDuration() {
-        val actual = WavFileReader().duration(testFile)
+        val actual = WavFileReader(testFile).duration()
         val expected =  34.5938
         Assert.assertEquals(expected, actual, 0.0001)
     }
@@ -31,12 +31,12 @@ class WavFileReaderTests {
             "3",
             "",
             mutableListOf(
-                CuePoint(0, "1", 1),
-                CuePoint(537586, "2", 2),
-                CuePoint(1168141, "3", 3)
+                CuePoint(0, "1"),
+                CuePoint(537586, "2"),
+                CuePoint(1168141, "3")
             )
         )
-        val actual = WavFileReader().readMetadata(testFile)
+        val actual = WavFileReader(testFile).readMetadata()
         Assert.assertEquals(expected, actual)
     }
 
@@ -54,12 +54,12 @@ class WavFileReaderTests {
             "3",
             "",
             mutableListOf(
-                CuePoint(0, "1", 1),
-                CuePoint(537586, "2", 2),
-                CuePoint(1168141, "3", 3)
+                CuePoint(0, "1"),
+                CuePoint(537586, "2"),
+                CuePoint(1168141, "3")
             )
         )
-        val actual = WavFileReader().read(testFile)
+        val actual = WavFileReader(testFile).read()
         val expectedBytes = 1525587 * BITS_PER_SAMPLE / 8
         val actualBytes = actual.audio.size
         Assert.assertEquals(expectedMetadata, actual.metadata)
@@ -68,7 +68,7 @@ class WavFileReaderTests {
 
     @Test(expected = RuntimeException::class)
     fun shouldThrowExceptionIfNotWavFile() {
-        WavFileReader().read(notWav)
+        WavFileReader(notWav).read()
     }
 
     @Test
@@ -86,7 +86,7 @@ class WavFileReaderTests {
             "",
             mutableListOf()
         )
-        val actual = WavFileReader().read(plainWav)
+        val actual = WavFileReader(plainWav).read()
         val expectedBytes = 44100
         val actualBytes = actual.audio.size
         Assert.assertEquals(expectedMetadata, actual.metadata)

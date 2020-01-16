@@ -21,16 +21,16 @@ class WavFileWriterTests {
             "3",
             "",
             mutableListOf(
-                CuePoint(0, "1", 1),
-                CuePoint(537586, "2", 2),
-                CuePoint(1168141, "3", 3)
+                CuePoint(0, "1"),
+                CuePoint(537586, "2"),
+                CuePoint(1168141, "3")
             )
         )
         val audioBytes = ByteArray(64)
         val wavFile = WavFile(metadata, audioBytes)
         WavFileWriter().write(wavFile, outputFile)
 
-        val readFile = WavFileReader().read(outputFile)
+        val readFile = WavFileReader(outputFile).read()
         Assert.assertEquals(wavFile.metadata, readFile.metadata)
         Assert.assertEquals(wavFile.audio.size, readFile.audio.size)
     }
