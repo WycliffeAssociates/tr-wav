@@ -47,9 +47,9 @@ class MetadataMapperTests {
     fun shouldMapMetadataToJSON() {
         for (test in TO_JSON_TESTS) {
             val input = test.first
-            val expected = test.second
+            val expectedValue = test.second
             val result = mapper.toJSON(input)
-            Assert.assertEquals(expected, result)
+            Assert.assertEquals(expectedValue, result)
         }
     }
 

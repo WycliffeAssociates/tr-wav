@@ -12,14 +12,14 @@ class WavFileReaderTests {
 
     @Test
     fun shouldGetFileDuration() {
-        val actual = WavFileReader(testFile).duration()
-        val expected =  34.5938
-        Assert.assertEquals(expected, actual, 0.0001)
+        val actualValue = WavFileReader(testFile).duration()
+        val expectedValue =  34.5938
+        Assert.assertEquals(expectedValue, actualValue, 0.0001)
     }
 
     @Test
     fun shouldReadMetadata() {
-        val expected = Metadata(
+        val expectedValue = Metadata(
             "nt",
             "en",
             "ulb",
@@ -36,8 +36,8 @@ class WavFileReaderTests {
                 CuePoint(1168141, "3")
             )
         )
-        val actual = WavFileReader(testFile).readMetadata()
-        Assert.assertEquals(expected, actual)
+        val actualValue = WavFileReader(testFile).readMetadata()
+        Assert.assertEquals(expectedValue, actualValue)
     }
 
     @Test
@@ -59,10 +59,10 @@ class WavFileReaderTests {
                 CuePoint(1168141, "3")
             )
         )
-        val actual = WavFileReader(testFile).read()
+        val actualValue = WavFileReader(testFile).read()
         val expectedBytes = 1525587 * BITS_PER_SAMPLE / 8
-        val actualBytes = actual.audio.size
-        Assert.assertEquals(expectedMetadata, actual.metadata)
+        val actualBytes = actualValue.audio.size
+        Assert.assertEquals(expectedMetadata, actualValue.metadata)
         Assert.assertEquals(expectedBytes, actualBytes)
     }
 
@@ -86,10 +86,10 @@ class WavFileReaderTests {
             "",
             mutableListOf()
         )
-        val actual = WavFileReader(plainWav).read()
+        val actualValue = WavFileReader(plainWav).read()
         val expectedBytes = 44100
-        val actualBytes = actual.audio.size
-        Assert.assertEquals(expectedMetadata, actual.metadata)
+        val actualBytes = actualValue.audio.size
+        Assert.assertEquals(expectedMetadata, actualValue.metadata)
         Assert.assertEquals(expectedBytes, actualBytes)
     }
 }
