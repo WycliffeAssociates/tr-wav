@@ -12,14 +12,14 @@ class WavFileReaderTests {
 
     @Test
     fun shouldGetFileDuration() {
-        val actual = WavFileReader().duration(testFile)
-        val expected =  34.5938
-        Assert.assertEquals(expected, actual, 0.0001)
+        val actualValue = WavFileReader(testFile).duration()
+        val expectedValue =  34.5938
+        Assert.assertEquals(expectedValue, actualValue, 0.0001)
     }
 
     @Test
     fun shouldReadMetadata() {
-        val expected = Metadata(
+        val expectedValue = Metadata(
             "nt",
             "en",
             "ulb",
@@ -31,13 +31,13 @@ class WavFileReaderTests {
             "3",
             "",
             mutableListOf(
-                CuePoint(0, "1", 1),
-                CuePoint(537586, "2", 2),
-                CuePoint(1168141, "3", 3)
+                CuePoint(0, "1"),
+                CuePoint(537586, "2"),
+                CuePoint(1168141, "3")
             )
         )
-        val actual = WavFileReader().readMetadata(testFile)
-        Assert.assertEquals(expected, actual)
+        val actualValue = WavFileReader(testFile).readMetadata()
+        Assert.assertEquals(expectedValue, actualValue)
     }
 
     @Test
@@ -54,21 +54,21 @@ class WavFileReaderTests {
             "3",
             "",
             mutableListOf(
-                CuePoint(0, "1", 1),
-                CuePoint(537586, "2", 2),
-                CuePoint(1168141, "3", 3)
+                CuePoint(0, "1"),
+                CuePoint(537586, "2"),
+                CuePoint(1168141, "3")
             )
         )
-        val actual = WavFileReader().read(testFile)
+        val actualValue = WavFileReader(testFile).read()
         val expectedBytes = 1525587 * BITS_PER_SAMPLE / 8
-        val actualBytes = actual.audio.size
-        Assert.assertEquals(expectedMetadata, actual.metadata)
+        val actualBytes = actualValue.audio.size
+        Assert.assertEquals(expectedMetadata, actualValue.metadata)
         Assert.assertEquals(expectedBytes, actualBytes)
     }
 
     @Test(expected = RuntimeException::class)
     fun shouldThrowExceptionIfNotWavFile() {
-        WavFileReader().read(notWav)
+        WavFileReader(notWav).read()
     }
 
     @Test
@@ -86,10 +86,10 @@ class WavFileReaderTests {
             "",
             mutableListOf()
         )
-        val actual = WavFileReader().read(plainWav)
+        val actualValue = WavFileReader(plainWav).read()
         val expectedBytes = 44100
-        val actualBytes = actual.audio.size
-        Assert.assertEquals(expectedMetadata, actual.metadata)
+        val actualBytes = actualValue.audio.size
+        Assert.assertEquals(expectedMetadata, actualValue.metadata)
         Assert.assertEquals(expectedBytes, actualBytes)
     }
 }

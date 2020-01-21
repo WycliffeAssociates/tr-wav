@@ -22,7 +22,7 @@ class MarkerListSerializer : JsonSerializer<List<CuePoint>>() {
         if (value == null) throw IllegalArgumentException("Input cannot be null")
         gen?.writeStartObject()
         for (cue in value) {
-            gen?.writeNumberField(cue.label, cue.position)
+            gen?.writeNumberField(cue.label, cue.location)
         }
         gen?.writeEndObject()
     }

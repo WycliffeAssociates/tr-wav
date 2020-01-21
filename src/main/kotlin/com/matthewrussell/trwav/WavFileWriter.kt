@@ -15,10 +15,12 @@ class WavFileWriter(
     private fun wordAlignedLength(length: Int): Int {
         return length + (4 - length % 4)
     }
+
     private fun wordAlignString(str: String): String = str.padEnd(
         wordAlignedLength(str.length),
         0.toChar()
     )
+
     private fun makeMetadataChunk(metadata: Metadata): ByteArray {
         val metadataString = metadataMapper.toJSON(metadata)
         val paddedString = wordAlignString(metadataString)
@@ -32,58 +34,59 @@ class WavFileWriter(
             .put(paddedString.toByteArray(US_ASCII()))
         return buffer.array()
     }
+
     private fun makeCueChunk(cues: List<CuePoint>): ByteArray {
-        val cueSize = 24
-        val cueChunkHeaderSize = 12
-        val chunkSize = cueChunkHeaderSize + cueSize * cues.size
-        val buffer = ByteBuffer.allocate(chunkSize)
-        buffer
-            .order(ByteOrder.LITTLE_ENDIAN)
-            .put("cue ".toByteArray(US_ASCII()))
-            .putInt(chunkSize - cueChunkHeaderSize + 4)
-            .putInt(cues.size)
-        for (cue in cues) {
-            buffer
-                .putInt(cue.id)
-                .putInt(cue.position)
-                .put("data".toByteArray(US_ASCII()))
-                .putInt(0)
-                .putInt(0)
-                .putInt(cue.position)
+        val cueChunkSize = CUE_HEADER_SIZE + (CUE_DATA_SIZE * cues.size)
+        val cueChunkBuffer = ByteBuffer.allocate(CHUNK_HEADER_SIZE + cueChunkSize)
+        cueChunkBuffer.order(ByteOrder.LITTLE_ENDIAN)
+        cueChunkBuffer.put(CUE_LABEL.toByteArray(Charsets.US_ASCII))
+        cueChunkBuffer.putInt(CUE_DATA_SIZE * cues.size + 4)
+        cueChunkBuffer.putInt(cues.size)
+        for (i in cues.indices) {
+            cueChunkBuffer.put(makeCueData(i, cues[i]))
         }
+        val labelChunkArray = makeLabelChunk(cues)
+        val combinedBuffer = ByteBuffer.allocate(cueChunkBuffer.capacity() + labelChunkArray.size)
+        combinedBuffer.put(cueChunkBuffer.array())
+        combinedBuffer.put(labelChunkArray)
+        return combinedBuffer.array()
+    }
+
+    private fun makeCueData(cueNumber: Int, cue: CuePoint): ByteArray {
+        val buffer = ByteBuffer.allocate(CUE_DATA_SIZE)
+        buffer.order(ByteOrder.LITTLE_ENDIAN)
+        buffer.putInt(cueNumber)
+        buffer.putInt(cue.location)
+        buffer.put(DATA_LABEL.toByteArray(Charsets.US_ASCII))
+        buffer.putInt(0)
+        buffer.putInt(0)
+        buffer.putInt(cue.location)
         return buffer.array()
     }
+
     private fun makeLabelChunk(cues: List<CuePoint>): ByteArray {
-        val size = (cues.size * 40) + 4 + cues.map { wordAlignedLength(it.label.length) }
-            .reduce { acc, next -> acc + next }
-        val buffer = ByteBuffer.allocate(size + 8)
-        buffer
-            .order(ByteOrder.LITTLE_ENDIAN)
-            .put("LIST".toByteArray(US_ASCII()))
-            .putInt(size)
-            .put("adtl".toByteArray(US_ASCII()))
-        for (cue in cues) {
-            buffer
-                .put("ltxt".toByteArray(US_ASCII()))
-                .putInt(20)
-                .putInt(cue.id)
-                .putInt(0)
-                .put("rvn ".toByteArray(US_ASCII()))
-                .putInt(0)
-                .putInt(0)
-                .put("labl".toByteArray(US_ASCII()))
-                .putInt(4 + wordAlignedLength(cue.label.length))
-                .putInt(cue.id)
-                .put(wordAlignString(cue.label).toByteArray(US_ASCII()))
+        val size = 12 * cues.size + computeTextSize(cues) // all strings + (8 for labl header, 4 for cue id) * num cues
+        val buffer = ByteBuffer.allocate(size + CHUNK_HEADER_SIZE + 4) // adds LIST header
+        buffer.order(ByteOrder.LITTLE_ENDIAN)
+        buffer.put(LIST_LABEL.toByteArray(Charsets.US_ASCII))
+        buffer.putInt(size + LABEL_SIZE)
+        buffer.put(ADTL_LABEL.toByteArray(Charsets.US_ASCII))
+        for (i in cues.indices) {
+            buffer.put(LABEL_LABEL.toByteArray(Charsets.US_ASCII))
+            val label = wordAlignedLabel(cues[i])
+            buffer.putInt(4 + label.size) // subchunk size here is label size plus id
+            buffer.putInt(i)
+            buffer.put(label)
         }
         return buffer.array()
     }
+
     private fun makeHeader(audioSize: Int, metadataSize: Int): ByteArray {
         return ByteBuffer
             .allocate(44)
             .order(ByteOrder.LITTLE_ENDIAN)
             .put("RIFF".toByteArray(US_ASCII()))
-            .putInt(audioSize + WAV_HEADER_LENGTH - 8 + metadataSize)
+            .putInt(audioSize + WAV_HEADER_SIZE - 8 + metadataSize)
             .put("WAVEfmt ".toByteArray(US_ASCII()))
             .putInt(16)
             .putShort(1)
@@ -98,6 +101,7 @@ class WavFileWriter(
             .putInt(audioSize)
             .array()
     }
+
     fun write(data: WavFile, dest: File) {
         val metadataChunk = makeMetadataChunk(data.metadata)
         val labelChunk = makeLabelChunk(data.metadata.markers)
@@ -114,5 +118,25 @@ class WavFileWriter(
             it.write(labelChunk)
             it.write(metadataChunk)
         }
+    }
+
+    private fun computeTextSize(cues: List<CuePoint>): Int {
+        var total = 0
+        for (i in cues.indices) {
+            val length = cues[i].label.length
+            total += getWordAlignedLength(length)
+        }
+        return total
+    }
+
+    private fun getWordAlignedLength(length: Int) = if (length % 4 != 0) length + 4 - (length % 4) else length
+
+    private fun wordAlignedLabel(cue: CuePoint): ByteArray {
+        val label = cue.label
+        var alignedLength = cue.label.length
+        if (alignedLength % 4 != 0) {
+            alignedLength += 4 - alignedLength % 4
+        }
+        return label.toByteArray().copyOf(alignedLength)
     }
 }

@@ -30,8 +30,8 @@ class RandomAccessFileExtensionsTest {
     fun shouldReadIntLE() {
         val raf = RandomAccessFile(testFile, "r")
         val expected = 0x04030201
-        val actual = raf.readIntLE()
-        Assert.assertEquals(expected, actual)
+        val actualValue = raf.readIntLE()
+        Assert.assertEquals(expected, actualValue)
     }
 
     @Test(expected = EOFException::class)
