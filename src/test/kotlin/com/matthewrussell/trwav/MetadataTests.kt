@@ -22,9 +22,9 @@ class MetadataTests {
         )
         val inputTakeInfo = "t10"
 
-        val expected = "fr_udb_b28_mat_c10_v01_t10.wav"
+        val expectedValue = "fr_udb_b28_mat_c10_v01_t10.wav"
         val result = input.toFilename(inputTakeInfo)
-        Assert.assertEquals(expected, result)
+        Assert.assertEquals(expectedValue, result)
     }
 
     @Test
@@ -44,9 +44,9 @@ class MetadataTests {
         )
         val inputTakeInfo = "t04"
 
-        val expected = "en_ulb_b01_gen_c01_v01-10_t04.wav"
+        val expectedValue = "en_ulb_b01_gen_c01_v01-10_t04.wav"
         val result = input.toFilename(inputTakeInfo)
-        Assert.assertEquals(expected, result)
+        Assert.assertEquals(expectedValue, result)
     }
 
     @Test
@@ -67,9 +67,9 @@ class MetadataTests {
         val inputTakeInfo = "t01"
         val width = 3
 
-        val expected = "en_ulb_b19_psa_c019_v001-002_t01.wav"
+        val expectedValue = "en_ulb_b19_psa_c019_v001-002_t01.wav"
         val result = input.toFilename(inputTakeInfo, width, width)
-        Assert.assertEquals(expected, result)
+        Assert.assertEquals(expectedValue, result)
     }
 
     @Test(expected = IllegalArgumentException::class)
