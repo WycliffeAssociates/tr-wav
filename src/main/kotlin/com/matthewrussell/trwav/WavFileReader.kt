@@ -202,7 +202,9 @@ class WavFileReader private constructor() {
                     chunk.get(labelBytes)
                     // trim necessary to strip trailing 0's used to pad to double word align
                     val label = String(labelBytes, Charsets.US_ASCII).trim { it.toByte() == 0.toByte() }
-                    cueListBuilder.addLabel(id, label)
+                    val labelNum = label.replace("""[^0-9]""".toRegex(), "")
+                    if(labelNum == "") throw InvalidWavFileException()
+                    cueListBuilder.addLabel(id, labelNum)
                 }
                 else -> {
                     chunk.seek(subchunkSize)
@@ -304,6 +306,8 @@ class WavFileReader private constructor() {
                 metadata.markers.add(CuePoint(cue.location, cue.label))
             }
         }
+
+        metadata.markers.sorted()
     }
 
     fun read(): WavFile {
