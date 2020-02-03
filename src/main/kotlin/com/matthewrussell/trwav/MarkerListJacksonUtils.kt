@@ -11,7 +11,8 @@ class MarkerListDeserializer : JsonDeserializer<List<CuePoint>>() {
         val node = p?.codec?.readTree<JsonNode>(p) ?: throw ParseException("Unable to parse json", 0)
         val cuePoints = mutableListOf<CuePoint>()
         for (key in node.fieldNames()) {
-            cuePoints.add(CuePoint(node.get(key).asInt(), key))
+            val labelNum = Utils.toNumeric(key)
+            cuePoints.add(CuePoint(node.get(key).asInt(), labelNum))
         }
         return cuePoints
     }
