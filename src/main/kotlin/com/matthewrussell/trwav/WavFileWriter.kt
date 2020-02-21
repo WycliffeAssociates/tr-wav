@@ -1,9 +1,9 @@
 package com.matthewrussell.trwav
 
-import sun.nio.cs.US_ASCII
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.charset.Charset
 
 const val BITS_PER_SAMPLE = 16
 const val SAMPLE_RATE = 44100
@@ -27,11 +27,11 @@ class WavFileWriter(
         val buffer = ByteBuffer.allocate(paddedString.length + 20)
         buffer
             .order(ByteOrder.LITTLE_ENDIAN)
-            .put("LIST".toByteArray(US_ASCII()))
+            .put("LIST".toByteArray(Charset.forName("US-ASCII")))
             .putInt(12 + paddedString.length)
-            .put("INFOIART".toByteArray(US_ASCII()))
+            .put("INFOIART".toByteArray(Charset.forName("US-ASCII")))
             .putInt(paddedString.length)
-            .put(paddedString.toByteArray(US_ASCII()))
+            .put(paddedString.toByteArray(Charset.forName("US-ASCII")))
         return buffer.array()
     }
 
@@ -85,9 +85,9 @@ class WavFileWriter(
         return ByteBuffer
             .allocate(44)
             .order(ByteOrder.LITTLE_ENDIAN)
-            .put("RIFF".toByteArray(US_ASCII()))
+            .put("RIFF".toByteArray(Charset.forName("US-ASCII")))
             .putInt(audioSize + WAV_HEADER_SIZE - 8 + metadataSize)
-            .put("WAVEfmt ".toByteArray(US_ASCII()))
+            .put("WAVEfmt ".toByteArray(Charset.forName("US-ASCII")))
             .putInt(16)
             .putShort(1)
             .putShort(NUM_CHANNELS.toShort())
@@ -97,7 +97,7 @@ class WavFileWriter(
             .put(0)
             .put(BITS_PER_SAMPLE.toByte())
             .put(0)
-            .put("data".toByteArray(US_ASCII()))
+            .put("data".toByteArray(Charset.forName("US-ASCII")))
             .putInt(audioSize)
             .array()
     }
