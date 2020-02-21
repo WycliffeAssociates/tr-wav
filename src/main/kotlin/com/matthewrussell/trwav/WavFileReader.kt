@@ -79,6 +79,7 @@ class WavFileReader private constructor() {
             }
         }
 
+        tryFixMetadata()
         matchCuePoints()
     }
 
@@ -285,6 +286,35 @@ class WavFileReader private constructor() {
             fmt == FMT,
             pcm == PCM
         ).all { true }
+    }
+
+    private fun tryFixMetadata() {
+        val fnmd = Metadata().fromFilename(file.nameWithoutExtension)
+
+        if(metadata.language == "") {
+            metadata.language = fnmd.language
+        }
+        if(metadata.anthology == "") {
+            metadata.anthology = fnmd.anthology
+        }
+        if(metadata.version == "") {
+            metadata.version = fnmd.version
+        }
+        if(metadata.bookNumber == "") {
+            metadata.bookNumber = fnmd.bookNumber
+        }
+        if(metadata.slug == "") {
+            metadata.slug = fnmd.slug
+        }
+        if(metadata.chapter == "") {
+            metadata.chapter = fnmd.chapter
+        }
+        if(metadata.startv == "") {
+            metadata.startv = fnmd.startv
+        }
+        if(metadata.endv == "") {
+            metadata.endv = fnmd.endv
+        }
     }
 
     private fun matchCuePoints() {
