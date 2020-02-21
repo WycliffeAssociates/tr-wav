@@ -56,7 +56,7 @@ data class Metadata(
         if(m.find()) {
             this.language = if (m.group(1) != null) m.group(1) else ""
             this.version = if (m.group(3) != null) m.group(3) else ""
-            this.bookNumber = if (m.group(4) != null) m.group(4) else ""
+            this.bookNumber = if (m.group(4) != null) m.group(4) else "0"
             this.slug = if (m.group(5) != null) m.group(5) else ""
             this.chapter = if (m.group(6) != null) m.group(6) else ""
             this.startv = if (m.group(7) != null) m.group(7) else ""
