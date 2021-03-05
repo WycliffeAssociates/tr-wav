@@ -37,17 +37,17 @@ data class Metadata(
         ).joinToString("_").plus(".wav")
     }
 
-    fun fromFilename(name: String): Metadata {
+    fun fromFilename(name: String, books: List<Book>): Metadata {
         val underscore = "_"
         val language = "([a-zA-Z]{2,3}(?:-[\\da-zA-Z]+)*)"
         val anthology = "(?:_(nt|ot|obs))?"
         val version = "([\\da-zA-Z]{2,3})"
-        val bookNumber = "b([\\d]{2})"
+        val bookNumber = "(?:_b([\\d]{2}))?"
         val book = "([\\da-zA-Z]+)"
         val chapter = "(?:_c([\\d]{2,3}))?"
         val verse = "(?:_v([\\d]{2,3})(?:-([\\d]{2,3}))?)?"
         val take = "(?:_t([\\d]{2}))?"
-        val pattern = language + underscore + anthology + version + underscore +
+        val pattern = language + underscore + anthology + version +
                 bookNumber + underscore + book +
                 chapter + verse + take + ".*"
         val p = Pattern.compile(pattern)
@@ -62,8 +62,13 @@ data class Metadata(
             this.startv = if (m.group(7) != null) m.group(7) else ""
             this.endv = if (m.group(8) != null) m.group(8) else this.startv
 
-            val anth = if(this.bookNumber.toInt() > 39) "nt" else "ot"
-            this.anthology = if (m.group(2) != null) m.group(2) else anth
+            if (this.slug.isNotEmpty()) {
+                val bk = books.singleOrNull { it.slug == this.slug }
+                bk?.let {
+                    this.bookNumber = if (m.group(4) != null) m.group(4) else it.num.toString()
+                    this.anthology = if (m.group(2) != null) m.group(2) else it.anth
+                }
+            }
         }
 
         return this

@@ -83,6 +83,21 @@ class WavFileReader private constructor() {
         matchCuePoints()
     }
 
+    fun read(): WavFile {
+        readFile()
+        return WavFile(metadata, audioData)
+    }
+
+    fun readMetadata(): Metadata {
+        readFile(false)
+        return metadata
+    }
+
+    fun duration(): Double {
+        readMetadata()
+        return totalAudioLength / (BITS_PER_SAMPLE / 8) / 44100.0
+    }
+
     @Throws(InvalidWavFileException::class)
     private fun parseHeader() {
         if (file.length() >= WAV_HEADER_SIZE) {
@@ -196,10 +211,13 @@ class WavFileReader private constructor() {
         while (chunk.remaining() > CHUNK_HEADER_SIZE) {
             val subchunk = chunk.getText(LABEL_SIZE)
             val subchunkSize = chunk.int
+
+            val wordAlignedSubchunkSize = subchunkSize + if (subchunkSize % 2 == 0) 0 else 1
+
             when (subchunk) {
                 LABEL_LABEL -> {
                     val id = chunk.int
-                    val labelBytes = ByteArray(subchunkSize - 4)
+                    val labelBytes = ByteArray(wordAlignedSubchunkSize - 4)
                     chunk.get(labelBytes)
                     // trim necessary to strip trailing 0's used to pad to double word align
                     val label = String(labelBytes, Charsets.US_ASCII).trim { it.toByte() == 0.toByte() }
@@ -208,7 +226,7 @@ class WavFileReader private constructor() {
                     cueListBuilder.addLabel(id, labelNum)
                 }
                 else -> {
-                    chunk.seek(subchunkSize)
+                    chunk.seek(wordAlignedSubchunkSize)
                 }
             }
         }
@@ -289,7 +307,8 @@ class WavFileReader private constructor() {
     }
 
     private fun tryFixMetadata() {
-        val fnmd = Metadata().fromFilename(file.nameWithoutExtension)
+        val books = getBooks()
+        val fnmd = Metadata().fromFilename(file.nameWithoutExtension, books)
 
         if(metadata.language == "") {
             metadata.language = fnmd.language
@@ -336,19 +355,13 @@ class WavFileReader private constructor() {
         }
     }
 
-    fun read(): WavFile {
-        readFile()
-        return WavFile(metadata, audioData)
-    }
-
-    fun readMetadata(): Metadata {
-        readFile(false)
-        return metadata
-    }
-
-    fun duration(): Double {
-        readMetadata()
-        return totalAudioLength / (BITS_PER_SAMPLE / 8) / 44100.0
+    private fun getBooks(): List<Book> {
+        return try {
+            val json = javaClass.getResource("/book_catalog.json").readText()
+            BooksMapper().fromJSON(json)
+        } catch (ex: java.lang.Exception) {
+            listOf()
+        }
     }
 }
 
