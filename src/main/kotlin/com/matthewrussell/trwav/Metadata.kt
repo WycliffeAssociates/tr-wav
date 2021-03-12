@@ -44,9 +44,9 @@ data class Metadata(
         val version = "([\\da-zA-Z]{2,3})"
         val bookNumber = "(?:_b([\\d]{2}))?"
         val book = "([\\da-zA-Z]+)"
-        val chapter = "(?:_c([\\d]{2,3}))?"
-        val verse = "(?:_v([\\d]{2,3})(?:-([\\d]{2,3}))?)?"
-        val take = "(?:_t([\\d]{2}))?"
+        val chapter = "(?:_c([\\d]{1,3}))?"
+        val verse = "(?:_v([\\d]{1,3})(?:-([\\d]{1,3}))?)?"
+        val take = "(?:_t([\\d]{1}))?"
         val pattern = language + underscore + anthology + version +
                 bookNumber + underscore + book +
                 chapter + verse + take + ".*"
